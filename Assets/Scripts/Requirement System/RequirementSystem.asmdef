@@ -1,0 +1,16 @@
+{
+    "name": "RequirementSystem",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d1e7d4dde4164d24fbbd9b8f35e3dd7d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

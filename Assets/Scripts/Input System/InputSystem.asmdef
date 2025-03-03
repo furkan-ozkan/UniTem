@@ -1,0 +1,17 @@
+{
+    "name": "InputSystem",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9ff7ac873443dd74898824f6a0c9c1cc",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
