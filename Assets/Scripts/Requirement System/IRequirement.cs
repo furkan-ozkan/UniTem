@@ -1,4 +1,4 @@
 public interface IRequirement
 {
-    bool IsMet(ActionContext context);
+    bool IsMet();
 }

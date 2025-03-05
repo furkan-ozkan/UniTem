@@ -1,7 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 
-public class Interaction : MonoBehaviour
+public class PlayerInteraction : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionDistance = 3f;
@@ -55,14 +55,10 @@ public class Interaction : MonoBehaviour
     {
         if (target.TryGetComponent(out BaseInteractable interactable))
         {
-            ActionContext context = new ActionContext
-            {
-                        // Etkileşime girilen nesne
-            };
 
-            if (interactable.CanInteract(context))
+            if (interactable.CanInteract())
             {
-                interactable.Interact(context);
+                interactable.Interact();
             }
             else
             {

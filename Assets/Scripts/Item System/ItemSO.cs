@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.Serialization;
-using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Events;
 
 [Flags]
 public enum ItemType
@@ -32,7 +31,7 @@ public class ItemSO : ScriptableObject
     public bool AlreadyFound { get; private set; }
     [FoldoutGroup("Discovery Status")]
     [ShowInInspector, SerializeReference]
-    public IActionExecutable AlreadyFoundAction;
+    public List<UnityEvent> AlreadyFoundAction;
 
     [FoldoutGroup("Inventory Information", true)]
     [ShowInInspector, ReadOnly]
@@ -47,18 +46,18 @@ public class ItemSO : ScriptableObject
     public bool HasBeenRead { get; private set; }
     [FoldoutGroup("Readable Panel")]
     [ShowInInspector, SerializeReference]
-    public IActionExecutable OnFirstReadAction;
+    public List<UnityEvent> OnFirstReadAction;
 
     [FoldoutGroup("Audio and Events", true)]
     public AudioClip PickupSound;
     [FoldoutGroup("Audio and Events")]
     [ShowInInspector, SerializeReference]
-    public IActionExecutable PickupAction;
+    public List<UnityEvent> PickupAction;
     [FoldoutGroup("Audio and Events")]
     public AudioClip OnDropSound;
     [FoldoutGroup("Audio and Events")]
     [ShowInInspector, SerializeReference]
-    public IActionExecutable OnDropAction;
+    public List<UnityEvent> OnDropAction;
 
     [FoldoutGroup("Consumability", true)]
     public bool IsConsumable;
@@ -66,7 +65,7 @@ public class ItemSO : ScriptableObject
     public bool IsConsumed { get; private set; }
     [FoldoutGroup("Consumability")]
     [ShowInInspector, SerializeReference]
-    public IActionExecutable ConsumeAction;
+    public List<UnityEvent> ConsumeAction;
     [FoldoutGroup("Consumability")]
     public AudioClip ConsumeSound;
 
@@ -180,7 +179,7 @@ public class ItemSO : ScriptableObject
         if (!AlreadyFound)
         {
             AlreadyFound = true;
-            AlreadyFoundAction?.ExecuteAsync(new ActionContext()).Forget();
+            //AlreadyFoundAction?.ExecuteAsync(new ActionContext()).Forget();
         }
     }
 
@@ -191,7 +190,7 @@ public class ItemSO : ScriptableObject
             if (!HasBeenRead)
             {
                 HasBeenRead = true;
-                OnFirstReadAction?.ExecuteAsync(new ActionContext()).Forget();
+                //OnFirstReadAction?.ExecuteAsync(new ActionContext()).Forget();
             }
         }
     }
@@ -201,7 +200,7 @@ public class ItemSO : ScriptableObject
         if (!IsInInventory)
         {
             IsInInventory = true;
-            PickupAction?.ExecuteAsync(new ActionContext()).Forget();
+            //PickupAction?.ExecuteAsync(new ActionContext()).Forget();
         }
     }
 
@@ -210,7 +209,7 @@ public class ItemSO : ScriptableObject
         if (IsInInventory)
         {
             IsInInventory = false;
-            OnDropAction?.ExecuteAsync(new ActionContext()).Forget();
+            //OnDropAction?.ExecuteAsync(new ActionContext()).Forget();
         }
     }
 
@@ -219,7 +218,7 @@ public class ItemSO : ScriptableObject
         if (IsConsumable && !IsConsumed)
         {
             IsConsumed = true;
-            ConsumeAction?.ExecuteAsync(new ActionContext()).Forget();
+            //ConsumeAction?.ExecuteAsync(new ActionContext()).Forget();
         }
     }
 }

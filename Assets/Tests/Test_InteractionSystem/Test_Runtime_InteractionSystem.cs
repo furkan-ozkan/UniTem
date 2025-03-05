@@ -24,13 +24,6 @@ public class Test_Runtime_InteractionSystem
     [UnityTest]
     public IEnumerator Interactable_JustInteraction()
     {
-        // Arrange
-        Test_Interaction_Door door = interactable.AddComponent<Test_Interaction_Door>();
-        ActionInvoker actionInvoker = player.AddComponent<ActionInvoker>();
-        door._openedRotation = new Vector3(0, 90, 0);
-        door._closedRotation = new Vector3(0, 0, 0);
-        door._doorRotate = ScriptableObject.CreateInstance<Test_Action_Door_Rotate>();
-        
         yield return null;
     }
 }
