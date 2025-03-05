@@ -1,5 +1,5 @@
 public interface IInteractable
 {
     bool CanInteract(ActionContext context);
-    void Interact();
+    void Interact(ActionContext context);
 }

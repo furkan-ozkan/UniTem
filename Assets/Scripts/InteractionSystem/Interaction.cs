@@ -5,8 +5,8 @@ public class Interaction : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionDistance = 3f;
-    [SerializeField] private float interactionCooldown = 0.2f; // Cooldown süresi
-    private bool _isMouseLocked;
+    [SerializeField] private float interactionCooldown = 0.2f; 
+    [SerializeField] private bool _isMouseLocked;
     private IInputHandler inputHandler;
     private bool canInteract = true;
 
@@ -35,7 +35,7 @@ public class Interaction : MonoBehaviour
         if (PerformRaycast(ray, out RaycastHit hit))
         {
             HandleInteraction(hit.collider.gameObject);
-            InteractionCooldown().Forget(); // UniTask cooldown başlat
+            InteractionCooldown().Forget(); 
         }
     }
 
@@ -53,17 +53,30 @@ public class Interaction : MonoBehaviour
 
     public void HandleInteraction(GameObject target)
     {
-        if (target.TryGetComponent(out IInteractable interactable))
+        if (target.TryGetComponent(out BaseInteractable interactable))
         {
-            interactable.Interact();
+            ActionContext context = new ActionContext
+            {
+                        // Etkileşime girilen nesne
+            };
+
+            if (interactable.CanInteract(context))
+            {
+                interactable.Interact(context);
+            }
+            else
+            {
+                Debug.Log("Etkileşim için gerekli şartlar sağlanmadı!");
+            }
         }
     }
+
 
     private async UniTaskVoid InteractionCooldown()
     {
         canInteract = false;
         Debug.LogWarning("Interaction On Cooldown");
-        await UniTask.Delay((int)(interactionCooldown * 1000)); // Milisaniye cinsinden gecikme
+        await UniTask.Delay((int)(interactionCooldown * 1000)); 
         canInteract = true;
     }
 }

@@ -2,12 +2,11 @@
     "name": "InteractionSystem",
     "rootNamespace": "",
     "references": [
-        "GUID:9ff7ac873443dd74898824f6a0c9c1cc",
-        "GUID:f648ad069fcf636488a77be57e2004f8",
         "GUID:d7724b7f8ef0ad54f902d6a4bd23d4d2",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:d1e7d4dde4164d24fbbd9b8f35e3dd7d",
-        "GUID:37f1329bde7f49e48aba900b3228f05e"
+        "GUID:6db4752592cdc0944a890fc58a163da4",
+        "GUID:37f1329bde7f49e48aba900b3228f05e",
+        "GUID:d1e7d4dde4164d24fbbd9b8f35e3dd7d"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

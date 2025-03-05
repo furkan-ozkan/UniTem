@@ -4,11 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Sirenix.OdinInspector;
 
-/// <summary>
-/// New ActionInvoker: A dynamic and flexible action execution system.
-/// Now continuously processes actions if available and properly handles undo logic.
-/// Allows inserting actions immediately after the currently executing action.
-/// </summary>
 public class ActionInvoker : MonoBehaviour
 {
     [Title("Action Queues")]
@@ -24,10 +19,52 @@ public class ActionInvoker : MonoBehaviour
     private bool isExecuting = false;
     private int currentActionIndex = -1;
 
+
+    #region Queue Based Actions
+
     /// <summary>
-    /// Adds an action to the queue and ensures execution starts if not already running.
+    /// Continuously processes queued actions until empty.
     /// </summary>
-    public void QueueAction(BaseActionSO action, ActionContext context)
+    private async UniTask ProcessActionQueueAsync(CancellationToken cancellationToken = default)
+    {
+        isExecuting = true;
+        cancellationTokenSource = new CancellationTokenSource();
+
+        while (currentActionIndex + 1 < actionQueue.Count)
+        {
+            currentActionIndex++;
+            var (action, context) = actionQueue[currentActionIndex];
+            await ExecuteActionAsync(action, context, cancellationTokenSource.Token);
+        }
+
+        isExecuting = false;
+        currentActionIndex = -1;
+    }
+    
+    #region Add To Queue
+
+    public void AddToQueue(BaseActionSO action, ActionContext context)
+    {
+        RPC_AddToQueue(action.ActionId, ActionContextUtility.ConvertContextToJson(context));
+    }
+    
+    private void RPC_AddToQueue(int actionID, string context)
+    {
+        BaseActionSO actionSo = ActionDatabase.Instance.GetActionById(actionID);
+        if (actionSo == null)
+        {
+            Debug.LogWarning($"ActionInvoker: Action with ID {actionID} not found.");
+            return;
+        }
+
+        ActionContext actionContext = ActionContextUtility.ConvertJsonToContext(context);
+        QueueAction(actionSo, actionContext);
+    }
+    
+    /// <summary>
+    /// Adds an action to the queue and starts processing if not already running.
+    /// </summary>
+    private void QueueAction(BaseActionSO action, ActionContext context)
     {
         if (action == null || context == null)
         {
@@ -40,15 +77,37 @@ public class ActionInvoker : MonoBehaviour
 
         if (!isExecuting)
         {
-            ExecuteQueueAsync().Forget();
+            ProcessActionQueueAsync().Forget();
         }
     }
 
+    #endregion
+
+    #region Insert Action After Current
+
+    public void AddActionAfterCurrent(BaseActionSO action, ActionContext context)
+    {
+        RPC_AddActionAfterCurrent(action.ActionId, ActionContextUtility.ConvertContextToJson(context));
+    }
+    
+    private void RPC_AddActionAfterCurrent(int actionID, string context)
+    {
+        BaseActionSO actionSo = ActionDatabase.Instance.GetActionById(actionID);
+        if (actionSo == null)
+        {
+            Debug.LogWarning($"ActionInvoker: Action with ID {actionID} not found.");
+            return;
+        }
+
+        ActionContext actionContext = ActionContextUtility.ConvertJsonToContext(context);
+        
+        InsertActionAfterCurrent(actionSo, actionContext);
+    }
+    
     /// <summary>
     /// Inserts an action immediately after the currently executing action.
-    /// If no action is running, it is executed immediately.
     /// </summary>
-    public void InsertActionAfterCurrent(BaseActionSO action, ActionContext context)
+    private void InsertActionAfterCurrent(BaseActionSO action, ActionContext context)
     {
         if (action == null || context == null)
         {
@@ -65,33 +124,39 @@ public class ActionInvoker : MonoBehaviour
 
         if (!isExecuting)
         {
-            ExecuteQueueAsync().Forget();
+            ProcessActionQueueAsync().Forget();
         }
     }
 
-    /// <summary>
-    /// Continuously executes actions from the queue until empty.
-    /// </summary>
-    private async UniTask ExecuteQueueAsync(CancellationToken cancellationToken = default)
+#endregion
+
+    #endregion
+
+    #region Execute Single Action
+
+    public void ExecuteAction(BaseActionSO action, ActionContext context)
     {
-        isExecuting = true;
-        cancellationTokenSource = new CancellationTokenSource();
-
-        while (currentActionIndex + 1 < actionQueue.Count)
+        RPC_ExecuteAction(action.ActionId, ActionContextUtility.ConvertContextToJson(context));
+    }
+    
+    private void RPC_ExecuteAction(int actionID, string context)
+    {
+        BaseActionSO actionSo = ActionDatabase.Instance.GetActionById(actionID);
+        if (actionSo == null)
         {
-            currentActionIndex++;
-            var (action, context) = actionQueue[currentActionIndex];
-            await ExecuteActionAsync(action, context, cancellationTokenSource.Token);
+            Debug.LogWarning($"ActionInvoker: Action with ID {actionID} not found.");
+            return;
         }
 
-        isExecuting = false;
-        currentActionIndex = -1;
+        ActionContext actionContext = ActionContextUtility.ConvertJsonToContext(context);
+        
+        ExecuteActionAsync(actionSo, actionContext);
     }
-
+    
     /// <summary>
-    /// Executes a single action with its own unique context.
+    /// Executes a single action and stores it in history.
     /// </summary>
-    public async UniTask ExecuteActionAsync(BaseActionSO action, ActionContext context, CancellationToken cancellationToken = default)
+    private async UniTask ExecuteActionAsync(BaseActionSO action, ActionContext context, CancellationToken cancellationToken = default)
     {
         if (action == null || context == null)
         {
@@ -104,8 +169,12 @@ public class ActionInvoker : MonoBehaviour
         historyView.Insert(0, (action, context));
     }
 
+    #endregion
+
+    #region Undo Actions
+
     /// <summary>
-    /// Cancels all queued actions, allows the currently executing action to finish, and then undoes only completed actions.
+    /// Cancels all queued actions and undoes completed ones.
     /// </summary>
     public async UniTask UndoAllActionsAsync(CancellationToken cancellationToken = default)
     {
@@ -126,7 +195,7 @@ public class ActionInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Undoes the last executed action if possible.
+    /// Undoes the last executed action.
     /// </summary>
     public async UniTask UndoLastActionAsync(CancellationToken cancellationToken = default)
     {
@@ -140,4 +209,6 @@ public class ActionInvoker : MonoBehaviour
         historyView.RemoveAt(0);
         await action.UndoAsync(context, cancellationToken);
     }
+
+    #endregion
 }
