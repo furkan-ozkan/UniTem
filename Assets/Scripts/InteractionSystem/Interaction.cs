@@ -1,5 +1,6 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using Knife.HDRPOutline.Core;
 
 public class Interaction : MonoBehaviour
 {
@@ -9,11 +10,8 @@ public class Interaction : MonoBehaviour
     [SerializeField] private bool _isMouseLocked;
     private IInputHandler inputHandler;
     private bool canInteract = true;
-
-    public void Initialize(IInputHandler handler)
-    {
-        inputHandler = handler;
-    }
+    // Son hover yapılan nesneyi takip ediyoruz.
+    private BaseInteractable lastHoveredObject = null;
 
     private void Awake()
     {
@@ -23,9 +21,41 @@ public class Interaction : MonoBehaviour
 
     private void Update()
     {
+        TryHover();
         if (inputHandler.IsInteractPressed() && canInteract) 
         {
             TryInteract();
+        }
+    }
+
+    public void TryHover()
+    {
+        Ray ray = GenerateRay();
+        if (PerformRaycast(ray, out RaycastHit hit))
+        {
+            BaseInteractable currentHoveredObject = hit.transform.GetComponent<BaseInteractable>();
+            if (currentHoveredObject)
+            {
+                // Eğer yeni hover edilen nesne farklıysa önceki hover kapatılır.
+                if (lastHoveredObject != currentHoveredObject)
+                {
+                    if (lastHoveredObject != null)
+                    {
+                        lastHoveredObject.EndHover();
+                    }
+                    currentHoveredObject.StartHover();
+                    lastHoveredObject = currentHoveredObject;
+                }
+            }
+        }
+        else
+        {
+            // Hiçbir nesne hover edilmiyorsa, önceki hover kapatılır.
+            if (lastHoveredObject != null)
+            {
+                lastHoveredObject.EndHover();
+                lastHoveredObject = null;
+            }
         }
     }
 
@@ -55,14 +85,9 @@ public class Interaction : MonoBehaviour
     {
         if (target.TryGetComponent(out BaseInteractable interactable))
         {
-            ActionContext context = new ActionContext
+            if (interactable.Interact(gameObject))
             {
-                        // Etkileşime girilen nesne
-            };
-
-            if (interactable.CanInteract(context))
-            {
-                interactable.Interact(context);
+                // İstenilen aksiyon gerçekleşti.
             }
             else
             {
@@ -70,7 +95,6 @@ public class Interaction : MonoBehaviour
             }
         }
     }
-
 
     private async UniTaskVoid InteractionCooldown()
     {

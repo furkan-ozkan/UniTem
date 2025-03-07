@@ -1,35 +1,36 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
+using Sirenix.OdinInspector;
 
 public class Inventory : MonoBehaviour
 {
+    [SerializeField] private Transform inventoryParent;
     [SerializeField] private int maxCapacity = 10;
-    private List<int> itemIds = new List<int>(); // Artık ItemSO yerine sadece ItemID saklıyoruz.
+    [ShowInInspector, ReadOnly] private List<Item> items = new List<Item>(); // Artık ItemSO yerine sadece ItemID saklıyoruz.
 
-    public bool AddItemById(int itemId)
+    public bool AddItemById(Item item)
     {
-        if (itemId <= 0)
+        if (item.itemData.ItemId <= 0)
         {
             Debug.LogWarning("Invalid Item ID! Cannot add to inventory.");
             return false;
         }
 
-        if (itemIds.Count >= maxCapacity)
+        if (items.Count >= maxCapacity)
         {
             Debug.LogWarning("Inventory is full!");
             return false;
         }
-
-        ItemSO item = ItemDatabase.Instance.GetItemById(itemId);
+        
         if (item != null) 
         {
-            itemIds.Add(itemId);
-            Debug.LogWarning($"Item with ID {itemId} added!");
+            items.Add(item);
             return true;
         }
         else 
         {
-            Debug.LogWarning($"Item with ID {itemId} does not exist in the database!");
             return false;
         }
     }
@@ -43,19 +44,23 @@ public class Inventory : MonoBehaviour
             return false;
         }
 
-        if (!itemIds.Contains(itemId))
+        for (int i = 0; i < items.Count; i++)
         {
-            Debug.LogWarning($"Item with ID {itemId} is not in the inventory, cannot remove!");
-            return false;
+            if (items[i].itemData.ItemId == itemId)
+            {
+                items.RemoveAt(i);
+                return true;
+            }
         }
 
-        return itemIds.Remove(itemId);
+        return false;
     }
+
 
 
     public void ClearInventory()
     {
-        itemIds.Clear();
+        items.Clear();
     }
 
     public bool ContainsItemById(int itemId)
@@ -65,7 +70,8 @@ public class Inventory : MonoBehaviour
             Debug.LogWarning("Invalid Item ID! Cannot contain in inventory.");
             return false;
         }
-        return itemIds.Contains(itemId);
+    
+        return items.Any(m_Item => m_Item.itemData.ItemId == itemId);
     }
 
     public int GetCapacity()
@@ -75,18 +81,24 @@ public class Inventory : MonoBehaviour
 
     public int GetItemsCount()
     {
-        return itemIds.Count;
+        return items.Count;
     }
 
-    public List<ItemSO> GetAllItems()
+    public List<Item> GetAllItems()
     {
-        List<ItemSO> items = new List<ItemSO>();
-        foreach (int itemId in itemIds)
-        {
-            ItemSO item = ItemDatabase.Instance.GetItemById(itemId);
-            if (item != null)
-                items.Add(item);
-        }
         return items;
+    }
+
+    public void ChildInInventory(Transform item)
+    {
+        item.SetParent(inventoryParent);
+        item.transform.localScale = Vector3.zero;
+    }
+
+    public bool IsFull()
+    {
+        if (GetItemsCount()>=GetCapacity())
+            return true;
+        return false;
     }
 }
