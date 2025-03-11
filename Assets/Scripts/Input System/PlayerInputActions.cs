@@ -119,6 +119,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ESC"",
+                    ""type"": ""Button"",
+                    ""id"": ""66980b0b-2761-4737-b5d9-27139ffe3afb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -176,6 +185,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Slot5"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""310aa5dd-0b95-40dd-a646-8c712ed5c69f"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ESC"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -193,6 +213,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Inventory_Slot3 = m_Inventory.FindAction("Slot3", throwIfNotFound: true);
         m_Inventory_Slot4 = m_Inventory.FindAction("Slot4", throwIfNotFound: true);
         m_Inventory_Slot5 = m_Inventory.FindAction("Slot5", throwIfNotFound: true);
+        m_Inventory_ESC = m_Inventory.FindAction("ESC", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -313,6 +334,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Inventory_Slot3;
     private readonly InputAction m_Inventory_Slot4;
     private readonly InputAction m_Inventory_Slot5;
+    private readonly InputAction m_Inventory_ESC;
     public struct InventoryActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -322,6 +344,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Slot3 => m_Wrapper.m_Inventory_Slot3;
         public InputAction @Slot4 => m_Wrapper.m_Inventory_Slot4;
         public InputAction @Slot5 => m_Wrapper.m_Inventory_Slot5;
+        public InputAction @ESC => m_Wrapper.m_Inventory_ESC;
         public InputActionMap Get() { return m_Wrapper.m_Inventory; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -346,6 +369,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Slot5.started += instance.OnSlot5;
             @Slot5.performed += instance.OnSlot5;
             @Slot5.canceled += instance.OnSlot5;
+            @ESC.started += instance.OnESC;
+            @ESC.performed += instance.OnESC;
+            @ESC.canceled += instance.OnESC;
         }
 
         private void UnregisterCallbacks(IInventoryActions instance)
@@ -365,6 +391,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Slot5.started -= instance.OnSlot5;
             @Slot5.performed -= instance.OnSlot5;
             @Slot5.canceled -= instance.OnSlot5;
+            @ESC.started -= instance.OnESC;
+            @ESC.performed -= instance.OnESC;
+            @ESC.canceled -= instance.OnESC;
         }
 
         public void RemoveCallbacks(IInventoryActions instance)
@@ -394,5 +423,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnSlot3(InputAction.CallbackContext context);
         void OnSlot4(InputAction.CallbackContext context);
         void OnSlot5(InputAction.CallbackContext context);
+        void OnESC(InputAction.CallbackContext context);
     }
 }

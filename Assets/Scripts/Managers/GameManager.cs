@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    private ItemManager itemManager;
     private void Start()
     {
         InitializeManagers();
@@ -10,6 +9,6 @@ public class GameManager : MonoBehaviour
 
     private void InitializeManagers()
     {
-        itemManager = new ItemManager();
+        InputProvider.Initialize();
     }
 }

@@ -1,24 +1,34 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
-using DG.Tweening;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 
 public class Inventory : MonoBehaviour
 {
     [SerializeField] private Transform inventoryParent;
     [SerializeField] private int maxCapacity = 10;
-    [ShowInInspector, ReadOnly] private List<Item> items = new List<Item>(); // Artık ItemSO yerine sadece ItemID saklıyoruz.
+    [ShowInInspector, ReadOnly] private List<Item> items = new List<Item>();
+    [SerializeField] private Item selectedItem;
+    [SerializeField, ReadOnly] private bool _canSelectItem = true;
 
-    public bool AddItemById(Item item)
+    private void OnEnable()
     {
-        if (item.itemData.ItemId <= 0)
-        {
-            Debug.LogWarning("Invalid Item ID! Cannot add to inventory.");
-            return false;
-        }
+        InputProvider.OnInventorySlotSelected += GetItemInInventoryByIndex;
+        InputProvider.OnEscPressed += EndSelectItem;
+        EventManager.OnItemReplace += RemoveItem;
+    }
 
-        if (items.Count >= maxCapacity)
+    private void OnDisable()
+    {
+        InputProvider.OnInventorySlotSelected -= GetItemInInventoryByIndex;
+        InputProvider.OnEscPressed -= EndSelectItem;
+        EventManager.OnItemReplace -= RemoveItem;
+    }
+
+    public bool AddItem(Item item)
+    {
+        if (IsFull())
         {
             Debug.LogWarning("Inventory is full!");
             return false;
@@ -36,42 +46,51 @@ public class Inventory : MonoBehaviour
     }
 
 
-    public bool RemoveItemById(int itemId)
+    public void RemoveItem(GameObject item)
     {
-        if (itemId <= 0) 
-        {
-            Debug.LogWarning($"Invalid Item ID ({itemId})! Cannot remove from inventory.");
-            return false;
-        }
-
-        for (int i = 0; i < items.Count; i++)
-        {
-            if (items[i].itemData.ItemId == itemId)
-            {
-                items.RemoveAt(i);
-                return true;
-            }
-        }
-
-        return false;
+        if (!item)
+            return;
+        
+        items.Remove(item.GetComponent<Item>());
+        item.transform.SetParent(null);
+        if (selectedItem == item.GetComponent<Item>())
+            selectedItem = null;
     }
 
+    public void EndSelectItem()
+    {
+        selectedItem?.UpdateItemScale(Vector3.zero);
+        selectedItem?.UpdateItemLocalPosition(Vector3.zero);
+        selectedItem = null;
+        EventManager.EndItemHold();
+    }
+
+    public void GetItemInInventoryByIndex(int inventoryIndex)
+    {
+        if (!_canSelectItem || inventoryIndex >= items.Count) return;
+        
+        CanSelectCD().Forget();
+        EndSelectItem();
+        if (selectedItem == items[inventoryIndex]) return;
+        
+        selectedItem = items[inventoryIndex];
+        selectedItem.UpdateItemScale(selectedItem.itemData.ItemHoldScale);
+        selectedItem.UpdateItemLocalPosition(selectedItem.itemData.ItemHoldPosition);
+        
+        EventManager.StartItemHold(items[inventoryIndex].gameObject);
+    }
+
+    private async UniTask CanSelectCD()
+    {
+        _canSelectItem = false;
+        await Task.Delay(200);
+        _canSelectItem = true;
+    }
 
 
     public void ClearInventory()
     {
         items.Clear();
-    }
-
-    public bool ContainsItemById(int itemId)
-    {
-        if (itemId <= 0) 
-        {
-            Debug.LogWarning("Invalid Item ID! Cannot contain in inventory.");
-            return false;
-        }
-    
-        return items.Any(m_Item => m_Item.itemData.ItemId == itemId);
     }
 
     public int GetCapacity()
@@ -92,7 +111,7 @@ public class Inventory : MonoBehaviour
     public void ChildInInventory(Transform item)
     {
         item.SetParent(inventoryParent);
-        item.transform.localScale = Vector3.zero;
+        item.GetComponent<Item>().UpdateItemLocalPosition(Vector3.zero);
     }
 
     public bool IsFull()

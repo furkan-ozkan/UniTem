@@ -1,32 +1,74 @@
+using System;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
-/// <summary>
-/// Oyun dünyasındaki bir item ile etkileşimi yöneten sınıf.
-/// BaseInteractable sınıfından kalıtım alarak temel etkileşim mantığını kullanır.
-/// </summary>
 public class Item : BaseInteractable
 {
     public ItemSO itemData;
+    private Tween scaleTween; 
+    private Tween moveTween; 
 
-    /// <summary>
-    /// Oyuncu item ile etkileşime geçtiğinde tetiklenir.
-    /// Bu metod event yöneticisi üzerinden ilgili event'i çağırır.
-    /// </summary>
-    /// <param name="player">Etkileşimde bulunan oyuncu nesnesi.</param>
-    /// <returns>İşlemin başarılı olup olmadığını belirtir.</returns>
     public override bool Interact(GameObject player)
     {
-        EventManager.ItemClicked(player, this);
+        ItemPickedUp(player);
         return true;
     }
-    
-    /// <summary>
-    /// Item kullanıldığında tetiklenecek işlemleri gerçekleştirir.
-    /// Örneğin, item tüketme veya aktif etme işlemleri burada ele alınabilir.
-    /// </summary>
-    /// <param name="player">Item'ı kullanacak oyuncu nesnesi.</param>
-    public void UseItem(GameObject player)
+
+    private void ItemPickedUp(GameObject player)
     {
-        EventManager.ItemUsed(player, this);
+        try
+        {
+            if (!itemData.ItemPrefab)
+                itemData.ItemPrefab = gameObject;
+            
+            Inventory inventory = player.GetComponent<Inventory>();
+            if (inventory == null)
+                return;
+        
+            UpdateItemColliders(false);
+            inventory.AddItem(this);
+        
+            UpdateItemScale(Vector3.zero);
+        
+            inventory.ChildInInventory(transform);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    public void UpdateItemColliders(bool isEnabled)
+    {
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (Collider collider in colliders)
+        {
+            collider.enabled = isEnabled;
+        }
+    }
+
+    public void UpdateItemScale(Vector3 scale)
+    {
+        scaleTween?.Complete();
+        scaleTween = transform.DOScale(scale, .2f);
+    }
+    public void UpdateItemLocalPosition(Vector3 position)
+    {
+        moveTween?.Complete();
+        moveTween = transform.DOLocalMove(position, .2f);
+    }
+    public void UpdateItemPosition(Vector3 position)
+    {
+        moveTween?.Complete();
+        moveTween = transform.DOMove(position, .2f);
+    }
+
+    [Button("Fill Replace Settings")]
+    public void FillHoldSettings()
+    {
+        itemData.ItemReplaceScale = transform.localScale;
+        itemData.ItemReplaceRotation = transform.localEulerAngles;
     }
 }
