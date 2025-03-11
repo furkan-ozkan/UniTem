@@ -16,6 +16,7 @@ public class Interaction : MonoBehaviour
     [SerializeField, ReadOnly] private Vector3 replaceStartScale;
     [SerializeField, ReadOnly] private GameObject currentHeldItem;
     [SerializeField, ReadOnly] private GameObject replaceItem;
+    [SerializeField, ReadOnly] private Vector3 replaceStartPos;
 
     [SerializeField, ReadOnly] private bool canInteract = true;
     private BaseInteractable lastHoveredObject = null;
@@ -24,23 +25,21 @@ public class Interaction : MonoBehaviour
     private void Start()
     {
         InputProvider.OnInteractPressed += TryInteract;
-        InputProvider.OnInteractPressed += ReplaceItem;
-        InputProvider.OnEscPressed += EndReplace;
         InputProvider.OnLookInput += UpdateMousePosition;
         
-        EventManager.OnStartItemHold += StartReplace;
-        EventManager.OnEndItemHold += EndReplace;
+        EventManager.OnItemSelected += CreateReplaceItem;
+        EventManager.OnItemReplaceClicked += ReplaceItem;
+        EventManager.OnClearSelectedItem += ClearReplaceItem;
     }
 
     private void OnDestroy()
     {
         InputProvider.OnInteractPressed -= TryInteract;
-        InputProvider.OnInteractPressed -= ReplaceItem;
-        InputProvider.OnEscPressed -= EndReplace;
         InputProvider.OnLookInput -= UpdateMousePosition;
         
-        EventManager.OnStartItemHold -= StartReplace;
-        EventManager.OnEndItemHold -= EndReplace;
+        EventManager.OnItemSelected -= CreateReplaceItem;
+        EventManager.OnItemReplaceClicked -= ReplaceItem;
+        EventManager.OnClearSelectedItem -= ClearReplaceItem;
     }
 
     private void Update()
@@ -119,85 +118,87 @@ public class Interaction : MonoBehaviour
         await UniTask.Delay((int)(interactionCooldown * 1000)); 
         canInteract = true;
     }
-    
+
     /// <summary>
     /// Replace
     /// </summary>
 
-    private GameObject CreateReplaceItem(GameObject originalItem)
-{
-    GameObject replaceItem = new GameObject(originalItem.name + "_Replace");
+    #region ReplaceItem
 
-    CopyMeshAndRenderer(originalItem, replaceItem);
-
-    if (originalItem.TryGetComponent(out Item itemComponent))
+    private void CreateReplaceItem(GameObject selectedItem)
     {
-        replaceItem.transform.localScale = itemComponent.itemData.ItemReplaceScale; 
-    }
-    else
-    {
-        replaceItem.transform.localScale = originalItem.transform.localScale; 
-    }
-
-    replaceItem.transform.SetPositionAndRotation(originalItem.transform.position, originalItem.transform.rotation);
-
-    foreach (Transform child in originalItem.transform)
-    {
-        GameObject childCopy = CreateReplaceItem(child.gameObject); 
-        childCopy.transform.SetParent(replaceItem.transform, false); 
-    }
-
-    return replaceItem;
+        replaceItem = CreateReplaceItemRecursively(selectedItem);
     }
     
+    private GameObject CreateReplaceItemRecursively(GameObject selectedItem)
+    {
+        GameObject replaceObject = new GameObject(selectedItem.name + "_Replace");
+        replaceObject.SetActive(false);
+        replaceStartPos = replaceObject.transform.position;
+        replaceStartScale = selectedItem.transform.localScale;
+
+        CopyMeshAndRenderer(selectedItem, replaceObject);
+
+        replaceObject.transform.SetPositionAndRotation(selectedItem.transform.position, selectedItem.transform.rotation);
+        replaceObject.transform.localScale = selectedItem.transform.localScale;
+
+        foreach (Transform child in selectedItem.transform)
+        {
+            GameObject childCopy = CreateReplaceItemRecursively(child.gameObject);
+            childCopy.transform.SetParent(replaceObject.transform, false);
+        }
+
+        return replaceObject;
+    }
+
     private void CopyMeshAndRenderer(GameObject original, GameObject copy)
     {
         if (original.TryGetComponent(out MeshFilter meshFilter))
         {
             copy.AddComponent<MeshFilter>().sharedMesh = meshFilter.sharedMesh;
         }
-        MeshRenderer newRenderer = copy.AddComponent<MeshRenderer>();
-        newRenderer.material = replaceMaterial;
-    }
 
-    public void StartReplace(GameObject heldItem)
-    {
-        EndReplace();
-        currentHeldItem = heldItem;
-        replaceItem = CreateReplaceItem(heldItem);
+        if (original.TryGetComponent(out MeshRenderer meshRenderer))
+        {
+            MeshRenderer newRenderer = copy.AddComponent<MeshRenderer>();
+
+            Material[] newMaterials = new Material[meshRenderer.sharedMaterials.Length];
+            for (int i = 0; i < newMaterials.Length; i++)
+            {
+                newMaterials[i] = replaceMaterial;
+            }
+            newRenderer.materials = newMaterials;
+        }
     }
-    public void EndReplace()
+    
+    #endregion
+
+    private void ClearReplaceItem()
     {
-        if (!currentHeldItem)
-            return;
-        
-        currentHeldItem = null;
         Destroy(replaceItem);
         replaceItem = null;
     }
-    public void ReplaceItem()
-    {
-        if (canInteract && currentHeldItem && lastHoveredObject == null && replaceItem.activeSelf)
-        {
-            Item heldItem = currentHeldItem.GetComponent<Item>();
-            Vector3 position = replaceItem.transform.position;
-            EventManager.ItemReplaced(currentHeldItem);
-            
-            heldItem.UpdateItemPosition(position);
-            heldItem.UpdateItemScale(heldItem.itemData.ItemReplaceScale);
-            
-            foreach (var col in heldItem.GetComponents<Collider>())
-            {
-                col.enabled = true;
-            }
 
-            EndReplace();
-        }
+    private void ReplaceItem(GameObject selectedItem)
+    {
+        if (lastHoveredObject || !replaceItem.activeSelf) return;
+
+        Item item = selectedItem.GetComponent<Item>();
+        
+        item.UpdateItemPosition(replaceItem.transform.position);
+        item.UpdateItemScale(item.itemData.ItemReplaceScale);
+
+        foreach (var col in selectedItem.GetComponents<Collider>()) 
+            col.enabled = true;
+        
+        ClearReplaceItem();
+        
+        EventManager.ItemReplaced();
     }
 
-    public void MoveReplaceItem()
+    private void MoveReplaceItem()
     {
-        if (replaceItem == null) return; 
+        if (!replaceItem) return; 
         
         Ray ray = GenerateRay(lastMousePosition);
 
@@ -211,7 +212,7 @@ public class Interaction : MonoBehaviour
             else
             {
                 replaceItem.SetActive(true);
-                replaceItem.transform.localScale = Vector3.one;
+                replaceItem.transform.localScale = replaceStartScale;
             }
         }
         else

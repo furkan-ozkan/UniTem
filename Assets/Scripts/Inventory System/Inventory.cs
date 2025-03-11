@@ -10,20 +10,21 @@ public class Inventory : MonoBehaviour
     [SerializeField] private int maxCapacity = 10;
     [ShowInInspector, ReadOnly] private List<Item> items = new List<Item>();
     [SerializeField] private Item selectedItem;
-    [SerializeField, ReadOnly] private bool _canSelectItem = true;
 
     private void OnEnable()
     {
-        InputProvider.OnInventorySlotSelected += GetItemInInventoryByIndex;
-        InputProvider.OnEscPressed += EndSelectItem;
-        EventManager.OnItemReplace += RemoveItem;
+        InputProvider.OnEscPressed += PutSelectedItemInInventory;
+        InputProvider.OnInventorySlotSelected += SelectItem;
+        InputProvider.OnInteractPressed += TryReplace;
+        EventManager.OnItemReplaced += ReplaceItem;
     }
 
     private void OnDisable()
     {
-        InputProvider.OnInventorySlotSelected -= GetItemInInventoryByIndex;
-        InputProvider.OnEscPressed -= EndSelectItem;
-        EventManager.OnItemReplace -= RemoveItem;
+        InputProvider.OnEscPressed -= PutSelectedItemInInventory;
+        InputProvider.OnInventorySlotSelected -= SelectItem;
+        InputProvider.OnInteractPressed -= TryReplace;
+        EventManager.OnItemReplaced -= ReplaceItem;
     }
 
     public bool AddItem(Item item)
@@ -46,47 +47,14 @@ public class Inventory : MonoBehaviour
     }
 
 
-    public void RemoveItem(GameObject item)
+    private void RemoveItem(GameObject item)
     {
         if (!item)
             return;
         
         items.Remove(item.GetComponent<Item>());
         item.transform.SetParent(null);
-        if (selectedItem == item.GetComponent<Item>())
-            selectedItem = null;
     }
-
-    public void EndSelectItem()
-    {
-        selectedItem?.UpdateItemScale(Vector3.zero);
-        selectedItem?.UpdateItemLocalPosition(Vector3.zero);
-        selectedItem = null;
-        EventManager.EndItemHold();
-    }
-
-    public void GetItemInInventoryByIndex(int inventoryIndex)
-    {
-        if (!_canSelectItem || inventoryIndex >= items.Count) return;
-        
-        CanSelectCD().Forget();
-        EndSelectItem();
-        if (selectedItem == items[inventoryIndex]) return;
-        
-        selectedItem = items[inventoryIndex];
-        selectedItem.UpdateItemScale(selectedItem.itemData.ItemHoldScale);
-        selectedItem.UpdateItemLocalPosition(selectedItem.itemData.ItemHoldPosition);
-        
-        EventManager.StartItemHold(items[inventoryIndex].gameObject);
-    }
-
-    private async UniTask CanSelectCD()
-    {
-        _canSelectItem = false;
-        await Task.Delay(200);
-        _canSelectItem = true;
-    }
-
 
     public void ClearInventory()
     {
@@ -119,5 +87,49 @@ public class Inventory : MonoBehaviour
         if (GetItemsCount()>=GetCapacity())
             return true;
         return false;
+    }
+
+    private void TryReplace()
+    {
+        if (selectedItem)
+        {
+            EventManager.ItemReplaceClicked(selectedItem.gameObject);
+        }
+    }
+
+    private void ReplaceItem()
+    {
+        if (selectedItem)
+        {
+            RemoveItem(selectedItem.gameObject);
+            selectedItem = null;
+        }
+    }
+
+    private void SelectItem(int index)
+    {
+        if (index < 0 || index >= items.Count)
+            return;
+
+        if (selectedItem == items[index])
+        {
+            PutSelectedItemInInventory();
+        }
+        else
+        {
+            PutSelectedItemInInventory();
+            selectedItem = items[index];
+            selectedItem.UpdateItemScale(selectedItem.itemData.ItemHoldScale);
+            selectedItem.UpdateItemLocalPosition(selectedItem.itemData.ItemHoldPosition);
+            EventManager.ItemSelected(selectedItem.gameObject);
+        }
+    }
+
+    private void PutSelectedItemInInventory()
+    {
+        selectedItem?.UpdateItemScale(Vector3.zero);
+        selectedItem?.UpdateItemLocalPosition(Vector3.zero);
+        selectedItem = null;
+        EventManager.ClearSelectedItem();
     }
 }
