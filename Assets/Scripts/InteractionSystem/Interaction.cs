@@ -11,9 +11,9 @@ public class Interaction : MonoBehaviour
     [SerializeField] private bool _isMouseLocked;
     
     [Header("Replace Settings")]
+    [SerializeField] private GameObject selectedItem;
     [SerializeField] private Material replaceMaterial;
     [SerializeField] private LayerMask layerMask;
-    [SerializeField, ReadOnly] private Vector3 replaceStartScale;
     [SerializeField, ReadOnly] private GameObject currentHeldItem;
     [SerializeField, ReadOnly] private GameObject replaceItem;
     [SerializeField, ReadOnly] private Vector3 replaceStartPos;
@@ -22,23 +22,23 @@ public class Interaction : MonoBehaviour
     private BaseInteractable lastHoveredObject = null;
     private Vector2 lastMousePosition;
 
-    private void Start()
+    private void OnEnable()
     {
         InputProvider.OnInteractPressed += TryInteract;
         InputProvider.OnLookInput += UpdateMousePosition;
+        InputProvider.OnInteractPressed += ReplaceItem;
         
         EventManager.OnItemSelected += CreateReplaceItem;
-        EventManager.OnItemReplaceClicked += ReplaceItem;
         EventManager.OnClearSelectedItem += ClearReplaceItem;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         InputProvider.OnInteractPressed -= TryInteract;
         InputProvider.OnLookInput -= UpdateMousePosition;
+        InputProvider.OnInteractPressed -= ReplaceItem;
         
         EventManager.OnItemSelected -= CreateReplaceItem;
-        EventManager.OnItemReplaceClicked -= ReplaceItem;
         EventManager.OnClearSelectedItem -= ClearReplaceItem;
     }
 
@@ -104,10 +104,13 @@ public class Interaction : MonoBehaviour
     {
         if (target.TryGetComponent(out BaseInteractable interactable))
         {
-            if (!interactable.Interact(gameObject))
+            if (!interactable.RequirementsMet(gameObject))
             {
                 Debug.Log("Etkileşim için gerekli şartlar sağlanmadı!");
+                return;
             }
+
+            interactable.Interact(gameObject);
             InteractionCooldown().Forget();
         }
     }
@@ -127,49 +130,86 @@ public class Interaction : MonoBehaviour
 
     private void CreateReplaceItem(GameObject selectedItem)
     {
-        replaceItem = CreateReplaceItemRecursively(selectedItem);
+        this.selectedItem = selectedItem;
+        replaceItem = CloneObject(selectedItem);
     }
     
-    private GameObject CreateReplaceItemRecursively(GameObject selectedItem)
+    public GameObject CloneObject(GameObject original)
     {
-        GameObject replaceObject = new GameObject(selectedItem.name + "_Replace");
-        replaceObject.SetActive(false);
-        replaceStartPos = replaceObject.transform.position;
-        replaceStartScale = selectedItem.transform.localScale;
+        if (original == null) return null;
 
-        CopyMeshAndRenderer(selectedItem, replaceObject);
+        ItemSO itemData = original.GetComponent<Item>().itemData;
 
-        replaceObject.transform.SetPositionAndRotation(selectedItem.transform.position, selectedItem.transform.rotation);
-        replaceObject.transform.localScale = selectedItem.transform.localScale;
+        GameObject clone = new GameObject(original.name + "_Clone");
+        clone.SetActive(false);
+        
+        clone.transform.position = original.transform.position;
+        clone.transform.eulerAngles = itemData.ItemReplaceRotation;
+        clone.transform.localScale = itemData.ItemReplaceScale;
 
-        foreach (Transform child in selectedItem.transform)
-        {
-            GameObject childCopy = CreateReplaceItemRecursively(child.gameObject);
-            childCopy.transform.SetParent(replaceObject.transform, false);
-        }
+        CloneMeshAndMaterials(original, clone);
 
-        return replaceObject;
+        return clone;
     }
 
-    private void CopyMeshAndRenderer(GameObject original, GameObject copy)
+    private void CloneMeshAndMaterials(GameObject original, GameObject clone)
+{
+    MeshFilter originalMeshFilter = original.GetComponent<MeshFilter>();
+    MeshRenderer originalRenderer = original.GetComponent<MeshRenderer>();
+    SkinnedMeshRenderer originalSkinnedRenderer = original.GetComponent<SkinnedMeshRenderer>();
+
+    // Eğer SkinnedMeshRenderer varsa, onu MeshFilter ve MeshRenderer'a dönüştür
+    if (originalSkinnedRenderer != null)
     {
-        if (original.TryGetComponent(out MeshFilter meshFilter))
+        MeshFilter cloneMeshFilter = clone.AddComponent<MeshFilter>();
+        MeshRenderer cloneRenderer = clone.AddComponent<MeshRenderer>();
+
+        // SkinnedMeshRenderer'den static bir mesh oluştur
+        cloneMeshFilter.mesh = originalSkinnedRenderer.sharedMesh;
+
+        // Materyalleri ata
+        Material[] originalMaterials = originalSkinnedRenderer.sharedMaterials;
+        Material[] newMaterials = new Material[originalMaterials.Length];
+
+        for (int i = 0; i < originalMaterials.Length; i++)
         {
-            copy.AddComponent<MeshFilter>().sharedMesh = meshFilter.sharedMesh;
+            newMaterials[i] = replaceMaterial;
         }
 
-        if (original.TryGetComponent(out MeshRenderer meshRenderer))
-        {
-            MeshRenderer newRenderer = copy.AddComponent<MeshRenderer>();
-
-            Material[] newMaterials = new Material[meshRenderer.sharedMaterials.Length];
-            for (int i = 0; i < newMaterials.Length; i++)
-            {
-                newMaterials[i] = replaceMaterial;
-            }
-            newRenderer.materials = newMaterials;
-        }
+        cloneRenderer.sharedMaterials = newMaterials;
     }
+    else if (originalMeshFilter != null) // Normal MeshFilter ve MeshRenderer kopyalaması
+    {
+        MeshFilter cloneMeshFilter = clone.AddComponent<MeshFilter>();
+        MeshRenderer cloneRenderer = clone.AddComponent<MeshRenderer>();
+
+        cloneMeshFilter.mesh = originalMeshFilter.mesh;
+
+        Material[] originalMaterials = originalRenderer.sharedMaterials;
+        Material[] newMaterials = new Material[originalMaterials.Length];
+
+        for (int i = 0; i < originalMaterials.Length; i++)
+        {
+            newMaterials[i] = replaceMaterial;
+        }
+
+        cloneRenderer.sharedMaterials = newMaterials;
+    }
+
+    // Çocuk nesneleri de klonla
+    foreach (Transform child in original.transform)
+    {
+        GameObject childClone = new GameObject(child.name);
+        childClone.transform.SetParent(clone.transform);
+        childClone.transform.localPosition = child.localPosition;
+        childClone.transform.localRotation = child.localRotation;
+        childClone.transform.localScale = child.localScale;
+
+        CloneMeshAndMaterials(child.gameObject, childClone);
+    }
+}
+
+
     
     #endregion
 
@@ -179,14 +219,15 @@ public class Interaction : MonoBehaviour
         replaceItem = null;
     }
 
-    private void ReplaceItem(GameObject selectedItem)
+    private void ReplaceItem()
     {
-        if (lastHoveredObject || !replaceItem.activeSelf) return;
+        if (lastHoveredObject || !replaceItem || !replaceItem.activeSelf || !selectedItem) return;
 
         Item item = selectedItem.GetComponent<Item>();
         
         item.UpdateItemPosition(replaceItem.transform.position);
         item.UpdateItemScale(item.itemData.ItemReplaceScale);
+        item.UpdateItemRotation(item.itemData.ItemReplaceRotation);
 
         foreach (var col in selectedItem.GetComponents<Collider>()) 
             col.enabled = true;
@@ -212,7 +253,6 @@ public class Interaction : MonoBehaviour
             else
             {
                 replaceItem.SetActive(true);
-                replaceItem.transform.localScale = replaceStartScale;
             }
         }
         else

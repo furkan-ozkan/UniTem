@@ -10,8 +10,9 @@ public class Interaction_Door : BaseInteractable
     
     public override bool Interact(GameObject player)
     {
+        base.Interact(player);
         Context_Action_Rotate context = new Context_Action_Rotate(gameObject, _isOpen ? _closedRotation : _openedRotation, _rotationTime);
-        if (CanInteract(context))
+        if (true)
         {
             _actionInvoker.QueueAction(new Action_Rotate(),context);
             _isOpen = !_isOpen;

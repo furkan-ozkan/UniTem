@@ -1,27 +1,31 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 using Knife.HDRPOutline.Core;
+using Sirenix.OdinInspector;
 
 [RequireComponent(typeof(ActionInvoker))]
 public abstract class BaseInteractable : MonoBehaviour
 {
     public string InteractableName { get; set; }
+    [InlineProperty] 
+    [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
+    public List<DynamicRequirement> requirements = new List<DynamicRequirement>();
+    public bool disableHoverAfterInteraction;
     public ActionInvoker _actionInvoker; 
-
-    [SerializeField] private List<BaseRequirement> requirements = new List<BaseRequirement>();
     
     private void Start()
     {
         _actionInvoker = GetComponent<ActionInvoker>();
     }
 
-    public virtual bool CanInteract(ActionContext context)
+    public virtual bool Interact(GameObject player)
     {
-        return requirements.All(requirement => requirement.IsMet(context));
+        if (disableHoverAfterInteraction)
+        {
+            EndHover();
+        }
+        return true;
     }
-    
-    public abstract bool Interact(GameObject player);
 
     public virtual void StartHover()
     {
@@ -37,5 +41,14 @@ public abstract class BaseInteractable : MonoBehaviour
         {
             outline.enabled = false;
         }
+    }
+
+    public bool RequirementsMet(GameObject player)
+    {
+        foreach (var req in requirements)
+        {
+            if (!req.IsMet(player)) return false;
+        }
+        return true;
     }
 }

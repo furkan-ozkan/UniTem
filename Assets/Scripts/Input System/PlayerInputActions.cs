@@ -198,6 +198,54 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Lockpick"",
+            ""id"": ""aae0d1ff-617b-453f-8e6a-93225e84c759"",
+            ""actions"": [
+                {
+                    ""name"": ""Look"",
+                    ""type"": ""Value"",
+                    ""id"": ""559b82b0-81a8-4213-a483-2ce5261f1665"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ESC"",
+                    ""type"": ""Button"",
+                    ""id"": ""4b67f5e1-b7e3-49f5-b9d6-1be6f23faef4"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""a9d1f673-7eb8-4c71-b231-81a05b487509"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a5608688-1ed9-4701-a095-3cf05570100e"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ESC"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -214,6 +262,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Inventory_Slot4 = m_Inventory.FindAction("Slot4", throwIfNotFound: true);
         m_Inventory_Slot5 = m_Inventory.FindAction("Slot5", throwIfNotFound: true);
         m_Inventory_ESC = m_Inventory.FindAction("ESC", throwIfNotFound: true);
+        // Lockpick
+        m_Lockpick = asset.FindActionMap("Lockpick", throwIfNotFound: true);
+        m_Lockpick_Look = m_Lockpick.FindAction("Look", throwIfNotFound: true);
+        m_Lockpick_ESC = m_Lockpick.FindAction("ESC", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -411,6 +463,60 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         }
     }
     public InventoryActions @Inventory => new InventoryActions(this);
+
+    // Lockpick
+    private readonly InputActionMap m_Lockpick;
+    private List<ILockpickActions> m_LockpickActionsCallbackInterfaces = new List<ILockpickActions>();
+    private readonly InputAction m_Lockpick_Look;
+    private readonly InputAction m_Lockpick_ESC;
+    public struct LockpickActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public LockpickActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Look => m_Wrapper.m_Lockpick_Look;
+        public InputAction @ESC => m_Wrapper.m_Lockpick_ESC;
+        public InputActionMap Get() { return m_Wrapper.m_Lockpick; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(LockpickActions set) { return set.Get(); }
+        public void AddCallbacks(ILockpickActions instance)
+        {
+            if (instance == null || m_Wrapper.m_LockpickActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_LockpickActionsCallbackInterfaces.Add(instance);
+            @Look.started += instance.OnLook;
+            @Look.performed += instance.OnLook;
+            @Look.canceled += instance.OnLook;
+            @ESC.started += instance.OnESC;
+            @ESC.performed += instance.OnESC;
+            @ESC.canceled += instance.OnESC;
+        }
+
+        private void UnregisterCallbacks(ILockpickActions instance)
+        {
+            @Look.started -= instance.OnLook;
+            @Look.performed -= instance.OnLook;
+            @Look.canceled -= instance.OnLook;
+            @ESC.started -= instance.OnESC;
+            @ESC.performed -= instance.OnESC;
+            @ESC.canceled -= instance.OnESC;
+        }
+
+        public void RemoveCallbacks(ILockpickActions instance)
+        {
+            if (m_Wrapper.m_LockpickActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(ILockpickActions instance)
+        {
+            foreach (var item in m_Wrapper.m_LockpickActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_LockpickActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public LockpickActions @Lockpick => new LockpickActions(this);
     public interface IPlayerActions
     {
         void OnInteract(InputAction.CallbackContext context);
@@ -423,6 +529,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnSlot3(InputAction.CallbackContext context);
         void OnSlot4(InputAction.CallbackContext context);
         void OnSlot5(InputAction.CallbackContext context);
+        void OnESC(InputAction.CallbackContext context);
+    }
+    public interface ILockpickActions
+    {
+        void OnLook(InputAction.CallbackContext context);
         void OnESC(InputAction.CallbackContext context);
     }
 }

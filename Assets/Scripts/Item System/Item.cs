@@ -9,6 +9,7 @@ public class Item : BaseInteractable
     public ItemSO itemData;
     private Tween scaleTween; 
     private Tween moveTween; 
+    private Tween rotationTween; 
 
     public override bool Interact(GameObject player)
     {
@@ -53,6 +54,11 @@ public class Item : BaseInteractable
     {
         scaleTween?.Complete();
         scaleTween = transform.DOScale(scale, .2f);
+    }
+    public void UpdateItemRotation(Vector3 rotation)
+    {
+        rotationTween?.Complete();
+        rotationTween = transform.DORotate(rotation, .2f);
     }
     public void UpdateItemLocalPosition(Vector3 position)
     {

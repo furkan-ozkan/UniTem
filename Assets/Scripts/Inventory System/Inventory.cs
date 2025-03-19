@@ -15,7 +15,6 @@ public class Inventory : MonoBehaviour
     {
         InputProvider.OnEscPressed += PutSelectedItemInInventory;
         InputProvider.OnInventorySlotSelected += SelectItem;
-        InputProvider.OnInteractPressed += TryReplace;
         EventManager.OnItemReplaced += ReplaceItem;
     }
 
@@ -23,7 +22,6 @@ public class Inventory : MonoBehaviour
     {
         InputProvider.OnEscPressed -= PutSelectedItemInInventory;
         InputProvider.OnInventorySlotSelected -= SelectItem;
-        InputProvider.OnInteractPressed -= TryReplace;
         EventManager.OnItemReplaced -= ReplaceItem;
     }
 
@@ -76,6 +74,11 @@ public class Inventory : MonoBehaviour
         return items;
     }
 
+    public Item GetItemByName(string itemName)
+    {
+        return items.Find(item => item.itemData.ItemName == itemName);
+    }
+
     public void ChildInInventory(Transform item)
     {
         item.SetParent(inventoryParent);
@@ -89,13 +92,6 @@ public class Inventory : MonoBehaviour
         return false;
     }
 
-    private void TryReplace()
-    {
-        if (selectedItem)
-        {
-            EventManager.ItemReplaceClicked(selectedItem.gameObject);
-        }
-    }
 
     private void ReplaceItem()
     {
@@ -121,11 +117,12 @@ public class Inventory : MonoBehaviour
             selectedItem = items[index];
             selectedItem.UpdateItemScale(selectedItem.itemData.ItemHoldScale);
             selectedItem.UpdateItemLocalPosition(selectedItem.itemData.ItemHoldPosition);
+            selectedItem.UpdateItemRotation(selectedItem.itemData.ItemHoldRotation);
             EventManager.ItemSelected(selectedItem.gameObject);
         }
     }
 
-    private void PutSelectedItemInInventory()
+    public void PutSelectedItemInInventory()
     {
         selectedItem?.UpdateItemScale(Vector3.zero);
         selectedItem?.UpdateItemLocalPosition(Vector3.zero);

@@ -42,3 +42,15 @@ public class Context_Action_Rotate : ActionContext
         this.axis = axis;
     }
 }
+
+public class Context_Action_StartPuzzle : ActionContext
+{
+    public GameObject player;
+    public MiniGame miniGame;
+    
+    public Context_Action_StartPuzzle(GameObject player, MiniGame miniGame)
+    {
+        this.player = player;
+        this.miniGame = miniGame;
+    }
+}

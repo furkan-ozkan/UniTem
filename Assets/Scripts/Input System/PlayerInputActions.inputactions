@@ -176,6 +176,54 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Lockpick",
+            "id": "aae0d1ff-617b-453f-8e6a-93225e84c759",
+            "actions": [
+                {
+                    "name": "Look",
+                    "type": "Value",
+                    "id": "559b82b0-81a8-4213-a483-2ce5261f1665",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ESC",
+                    "type": "Button",
+                    "id": "4b67f5e1-b7e3-49f5-b9d6-1be6f23faef4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a9d1f673-7eb8-4c71-b231-81a05b487509",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a5608688-1ed9-4701-a095-3cf05570100e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ESC",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []
