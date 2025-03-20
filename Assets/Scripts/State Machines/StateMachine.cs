@@ -3,16 +3,16 @@ using UnityEngine;
 
 public class StateMachine : MonoBehaviour
 {
-    private State currentState;
+    private OldState currentState;
     
-    public State IdleState { get; private set; }
-    public State WalkingState { get; private set; }
-    public State RunningState { get; private set; }
-    public State CrouchState { get; private set; }
+    public OldState IdleState { get; private set; }
+    public OldState WalkingState { get; private set; }
+    public OldState RunningState { get; private set; }
+    public OldState CrouchState { get; private set; }
 
     private void Awake()
     {
-        IdleState = new PlayerIdleState(this);
+        IdleState = new OldPlayerIdleState(this);
         WalkingState = new PlayerWalkingState(this);
         RunningState = new PlayerRunState(this);
         CrouchState = new PlayerCrouchState(this);
@@ -20,7 +20,7 @@ public class StateMachine : MonoBehaviour
         ChangeState(IdleState);
     }
 
-    public void ChangeState(State newState)
+    public void ChangeState(OldState newState)
     {
         currentState?.Exit();
         currentState = newState;

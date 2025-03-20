@@ -7,7 +7,7 @@ public static class EventManager
     private static HashSet<string> occurredEvents = new HashSet<string>();
     
     /// <summary>
-    /// Item Hold And Replace Events
+    /// OldItem Hold And Replace Events
     /// </summary>
     public static Action<GameObject> OnItemSelected;
     public static Action OnClearSelectedItem;

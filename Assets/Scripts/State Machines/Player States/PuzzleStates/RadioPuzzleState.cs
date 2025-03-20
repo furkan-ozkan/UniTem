@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RadioPuzzleState : State
+public class RadioPuzzleState : OldState
 {
     public RadioPuzzleState(StateMachine stateMachine) : base(stateMachine) { }
 

@@ -1,15 +1,14 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
+using System.Collections.Generic;
 
 public class Inventory : MonoBehaviour
 {
     [SerializeField] private Transform inventoryParent;
     [SerializeField] private int maxCapacity = 10;
+    [ShowInInspector, ReadOnly] private List<OldItem> oldItems = new List<OldItem>();
     [ShowInInspector, ReadOnly] private List<Item> items = new List<Item>();
-    [SerializeField] private Item selectedItem;
+    [SerializeField] private OldItem selectedItem;
 
     private void OnEnable()
     {
@@ -25,38 +24,45 @@ public class Inventory : MonoBehaviour
         EventManager.OnItemReplaced -= ReplaceItem;
     }
 
-    public bool AddItem(Item item)
+    public bool AddItem(OldItem item)
     {
         if (IsFull())
         {
             Debug.LogWarning("Inventory is full!");
             return false;
         }
-        
-        if (item != null) 
+
+        if (item != null)
         {
-            items.Add(item);
+            oldItems.Add(item);
             return true;
         }
-        else 
+        else
         {
             return false;
         }
     }
 
+    public void AddItem(GameObject item)
+    {
+        if (!item)
+            return;
+
+        items.Add(item.GetComponent<Item>());
+    }
 
     private void RemoveItem(GameObject item)
     {
         if (!item)
             return;
-        
-        items.Remove(item.GetComponent<Item>());
+
+        oldItems.Remove(item.GetComponent<OldItem>());
         item.transform.SetParent(null);
     }
 
     public void ClearInventory()
     {
-        items.Clear();
+        oldItems.Clear();
     }
 
     public int GetCapacity()
@@ -66,28 +72,28 @@ public class Inventory : MonoBehaviour
 
     public int GetItemsCount()
     {
-        return items.Count;
+        return oldItems.Count;
     }
 
-    public List<Item> GetAllItems()
+    public List<OldItem> GetAllItems()
     {
-        return items;
+        return oldItems;
     }
 
-    public Item GetItemByName(string itemName)
+    public OldItem GetItemByName(string itemName)
     {
-        return items.Find(item => item.itemData.ItemName == itemName);
+        return oldItems.Find(item => item.itemData.ItemName == itemName);
     }
 
     public void ChildInInventory(Transform item)
     {
         item.SetParent(inventoryParent);
-        item.GetComponent<Item>().UpdateItemLocalPosition(Vector3.zero);
+        item.GetComponent<OldItem>().UpdateItemLocalPosition(Vector3.zero);
     }
 
     public bool IsFull()
     {
-        if (GetItemsCount()>=GetCapacity())
+        if (GetItemsCount() >= GetCapacity())
             return true;
         return false;
     }
@@ -104,17 +110,17 @@ public class Inventory : MonoBehaviour
 
     private void SelectItem(int index)
     {
-        if (index < 0 || index >= items.Count)
+        if (index < 0 || index >= oldItems.Count)
             return;
 
-        if (selectedItem == items[index])
+        if (selectedItem == oldItems[index])
         {
             PutSelectedItemInInventory();
         }
         else
         {
             PutSelectedItemInInventory();
-            selectedItem = items[index];
+            selectedItem = oldItems[index];
             selectedItem.UpdateItemScale(selectedItem.itemData.ItemHoldScale);
             selectedItem.UpdateItemLocalPosition(selectedItem.itemData.ItemHoldPosition);
             selectedItem.UpdateItemRotation(selectedItem.itemData.ItemHoldRotation);

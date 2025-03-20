@@ -20,7 +20,7 @@ public class MiniGame_Lockpick : MiniGame
         EventManager.RecordEvent("LockpickEnd");
         miniGameCamera.SetActive(false);
         lockpickController.enabled = false;
-        player.GetComponent<StateMachine>().ChangeState(new PlayerIdleState(player.GetComponent<StateMachine>()));
+        player.GetComponent<StateMachine>().ChangeState(new OldPlayerIdleState(player.GetComponent<StateMachine>()));
         player = null;
     }
 
@@ -34,7 +34,7 @@ public class MiniGame_Lockpick : MiniGame
         
     }
 
-    public override State GetState()
+    public override OldState GetState()
     {
         return new PlayerPuzzleState(player.GetComponent<StateMachine>(), PuzzleType.Lockpick);
     }

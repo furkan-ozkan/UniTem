@@ -4,7 +4,7 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-public class Item : BaseInteractable
+public class OldItem : BaseInteractable
 {
     public ItemSO itemData;
     private Tween scaleTween; 

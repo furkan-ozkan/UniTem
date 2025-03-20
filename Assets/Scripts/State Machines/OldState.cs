@@ -1,8 +1,8 @@
-public abstract class State
+public abstract class OldState
 {
     protected StateMachine stateMachine;
 
-    public State(StateMachine stateMachine)
+    public OldState(StateMachine stateMachine)
     {
         this.stateMachine = stateMachine;
     }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Item_Gun : Item
+public class Item_Gun : OldItem
 {
     public GameObject bullet;
     public Transform spawnPoint;

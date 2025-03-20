@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerRunState : State
+public class PlayerRunState : OldState
 {
     public PlayerRunState(StateMachine stateMachine) : base(stateMachine) { }
 

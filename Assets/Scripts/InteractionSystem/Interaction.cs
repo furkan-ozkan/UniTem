@@ -138,7 +138,7 @@ public class Interaction : MonoBehaviour
     {
         if (original == null) return null;
 
-        ItemSO itemData = original.GetComponent<Item>().itemData;
+        ItemSO itemData = original.GetComponent<OldItem>().itemData;
 
         GameObject clone = new GameObject(original.name + "_Clone");
         clone.SetActive(false);
@@ -223,7 +223,7 @@ public class Interaction : MonoBehaviour
     {
         if (lastHoveredObject || !replaceItem || !replaceItem.activeSelf || !selectedItem) return;
 
-        Item item = selectedItem.GetComponent<Item>();
+        OldItem item = selectedItem.GetComponent<OldItem>();
         
         item.UpdateItemPosition(replaceItem.transform.position);
         item.UpdateItemScale(item.itemData.ItemReplaceScale);

@@ -7,7 +7,7 @@ public enum PuzzleType
     Radio
 }
 
-public class PlayerPuzzleState : State
+public class PlayerPuzzleState : OldState
 {
     private StateMachine puzzleStateMachine;
     private PuzzleType puzzleType;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerCrouchState : State
+public class PlayerCrouchState : OldState
 {
     public PlayerCrouchState(StateMachine stateMachine) : base(stateMachine) { }
 

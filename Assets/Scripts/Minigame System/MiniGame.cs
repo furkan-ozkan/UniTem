@@ -20,5 +20,5 @@ public abstract class MiniGame : MonoBehaviour
     public abstract void EndMiniGame();
     public abstract void CompleteMiniGame();
     public abstract void ResetMiniGame();
-    public abstract State GetState();
+    public abstract OldState GetState();
 }

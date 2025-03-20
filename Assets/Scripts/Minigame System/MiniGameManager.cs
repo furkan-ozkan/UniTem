@@ -18,7 +18,7 @@ public static class MiniGameManager
     {
         miniGame.ResetMiniGame();
     }
-    public static State GetState(MiniGame miniGame)
+    public static OldState GetState(MiniGame miniGame)
     {
         return miniGame.GetState();
     }
