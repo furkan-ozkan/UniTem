@@ -24,16 +24,16 @@ public class OldItem : BaseInteractable
             if (!itemData.ItemPrefab)
                 itemData.ItemPrefab = gameObject;
             
-            Inventory inventory = player.GetComponent<Inventory>();
-            if (inventory == null)
+            InventorySlotContainer ınventorySlotContainer = player.GetComponent<InventorySlotContainer>();
+            if (ınventorySlotContainer == null)
                 return;
         
             UpdateItemColliders(false);
-            inventory.AddItem(this);
+            // _ınventorySlotContainer.AddItem(this);
         
             UpdateItemScale(Vector3.zero);
         
-            inventory.ChildInInventory(transform);
+            // _ınventorySlotContainer.ChildInInventory(transform);
         }
         catch (Exception ex)
         {

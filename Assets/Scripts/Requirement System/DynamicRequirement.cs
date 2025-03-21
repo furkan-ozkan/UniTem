@@ -21,17 +21,17 @@ public class DynamicRequirement
 
     public bool IsMet(GameObject player)
     {
-        switch (requirementType)
-        {
-            case RequirementType.ItemRequirement:
-                return player.GetComponent<Inventory>().GetItemByName(itemName);
-            
-            case RequirementType.EventRequirement:
-                return EventManager.HasEventOccurred(eventName);
-                
-            case RequirementType.UncompletedRequirement:
-                return !EventManager.HasEventOccurred(eventName);
-        }
+        // switch (requirementType)
+        // {
+        //     case RequirementType.ItemRequirement:
+        //         return player.GetComponent<InventorySlotContainer>().GetItemByName(itemName);
+        //     
+        //     case RequirementType.EventRequirement:
+        //         return EventManager.HasEventOccurred(eventName);
+        //         
+        //     case RequirementType.UncompletedRequirement:
+        //         return !EventManager.HasEventOccurred(eventName);
+        // }
         return false;
     }
 }

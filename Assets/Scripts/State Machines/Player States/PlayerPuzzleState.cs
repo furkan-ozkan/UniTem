@@ -21,9 +21,9 @@ public class PlayerPuzzleState : OldState
     public override void Enter()
     {
         Debug.Log($"Player entered {puzzleType} PUZZLE");
-        stateMachine.GetComponent<Inventory>().PutSelectedItemInInventory();
+        // stateMachine.GetComponent<InventorySlotContainer>().PutSelectedItemInInventory();
         stateMachine.GetComponent<Interaction>().enabled = false;
-        stateMachine.GetComponent<Inventory>().enabled = false;
+        // stateMachine.GetComponent<InventorySlotContainer>().enabled = false;
 
         switch (puzzleType)
         {
@@ -45,6 +45,6 @@ public class PlayerPuzzleState : OldState
     {
         Debug.Log("Player exited PUZZLE MODE");
         stateMachine.GetComponent<Interaction>().enabled = true;
-        stateMachine.GetComponent<Inventory>().enabled = true;
+        // stateMachine.GetComponent<InventorySlotContainer>().enabled = true;
     }
 }

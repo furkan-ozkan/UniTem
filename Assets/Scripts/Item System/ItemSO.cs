@@ -16,7 +16,7 @@ public class ItemSO
     [ShowInInspector]
     public bool AlreadyFound { get; set; }
 
-    [FoldoutGroup("Inventory Information", true)]
+    [FoldoutGroup("InventorySlotContainer Information", true)]
     [ShowInInspector]
     public bool IsInInventory { get; private set; }
 

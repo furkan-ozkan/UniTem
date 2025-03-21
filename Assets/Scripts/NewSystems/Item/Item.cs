@@ -1,11 +1,13 @@
-using System;
-using RedAxeGames;
 using UnityEngine;
-using Sirenix.OdinInspector;
+using RedAxeGames;
 
 [RequireComponent(typeof(Rigidbody), typeof(Collider)), RequireComponent(typeof(Carryable), typeof(Placeable))]
 public class Item : MonoBehaviour
 {
+    [SerializeField] private ItemDataBase itemDataBase = null;
+    public ItemDataBase ItemDataBase => itemDataBase;
+    
+    
     private PlayerHand localPlayerHand = null;
     private Placeable localPlaceable = null;
     private Carryable localCarryable = null;

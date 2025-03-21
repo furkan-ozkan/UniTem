@@ -7,7 +7,11 @@ public class Interaction_Door : BaseInteractable
     public Vector3 _openedRotation;
     public Vector3 _closedRotation;
     public float _rotationTime;
-    
+
+    public void TestInteract()
+    {
+        Debug.LogError(provider.Permission);
+    }
     public override bool Interact(GameObject player)
     {
         base.Interact(player);
