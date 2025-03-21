@@ -13,13 +13,14 @@ namespace RedAxeGames
 
         private float startInputTime = 0.00f;
         private float endInputTime = 0.00f;
-        
+
         public static event System.Action<float, float> OnInputHolding = null;
         public static event System.Action OnHoldInputCanceled = null;
-        
+
         private delegate void UpdateHandler();
+
         private event UpdateHandler updateCallback = null;
-        
+
         private void Update()
         {
             updateCallback?.Invoke();
@@ -47,8 +48,8 @@ namespace RedAxeGames
         {
             OnInputHolding?.Invoke(startInputTime, endInputTime);
         }
-        
-        
+
+
         private void OnInputStarted(InputAction.CallbackContext ctx)
         {
             if (ctx.interaction is HoldInteraction holdInteraction)
@@ -73,6 +74,7 @@ namespace RedAxeGames
             updateCallback -= HandleInputHolding;
         }
 
-
+        public void RegisterToPerformedEvent(UnityAction newEvent) => onInputPerformed.AddListener(newEvent);
+        public void UnregisterToPerformedEvent(UnityAction newEvent) => onInputPerformed.RemoveListener(newEvent);
     }
 }

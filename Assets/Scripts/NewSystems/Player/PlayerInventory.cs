@@ -1,9 +1,9 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using Sirenix.OdinInspector;
 
 public class PlayerInventory : MonoBehaviour
 {
-    [SerializeField] private InventorySlotContainer inventory = null;
+    [SerializeField, HideInEditorMode] private InventorySlotContainer inventory = null;
     private const string RESOURCES_PLAYER_INVENTORY_TEMPLATE_PATH = "Inventory/PlayerInventoryBase";
 
     private void Awake()
@@ -12,6 +12,6 @@ public class PlayerInventory : MonoBehaviour
         inventory = ScriptableObject.CreateInstance<InventorySlotContainer>();
         playerInventoryTemplate.GetCopy(ref inventory);
     }
-    
+
     public InventorySlotContainer GetInventory() => inventory;
 }

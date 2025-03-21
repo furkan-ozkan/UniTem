@@ -7,21 +7,24 @@ public sealed class InventorySlotContainer : ScriptableObject
 {
     [SerializeField] private List<InventorySlotData> slots = new List<InventorySlotData>();
     public int Capacity => slots.Count;
-    
+
     public void GetCopy(ref InventorySlotContainer inventorySlotContainer)
     {
         inventorySlotContainer.slots = new List<InventorySlotData>(slots);
     }
-    
-    public void AddItem<T>(T newItem) where T : ItemDataBase
+
+    public bool AddItem(Item newItem) => AddItem(newItem.ItemDataBase);
+
+    public bool AddItem<T>(T newItem) where T : ItemDataBase
     {
         if (HasAvailableSlot(out InventorySlotData availableSlot))
         {
             availableSlot.AddItem(newItem);
-            return;
+            return true;
         }
-        
+
         Debug.LogError("Dont have any available slot");
+        return false;
     }
 
     private bool HasAvailableSlot(out InventorySlotData availableSlot)
@@ -37,7 +40,7 @@ public sealed class InventorySlotContainer : ScriptableObject
 
     public bool HasItems<T>(T[] itemDataBases) where T : ItemDataBase
     {
-        HashSet<string> itemNames = new HashSet<string>(slots.Select(x => x.Item.ItemName));
+        HashSet<string> itemNames = new HashSet<string>(slots.Select(x => x?.Item?.ItemName));
         return itemDataBases.All(item => itemNames.Contains(item.ItemName));
     }
 }
