@@ -10,15 +10,16 @@ public class Interaction_Door : BaseInteractable
 
     public void TestInteract()
     {
-        Debug.LogError(provider.Permission);
+        Debug.LogError(provider.GetPermission());
     }
+
     public override bool Interact(GameObject player)
     {
         base.Interact(player);
         Context_Action_Rotate context = new Context_Action_Rotate(gameObject, _isOpen ? _closedRotation : _openedRotation, _rotationTime);
         if (true)
         {
-            _actionInvoker.QueueAction(new Action_Rotate(),context);
+            _actionInvoker.QueueAction(new Action_Rotate(), context);
             _isOpen = !_isOpen;
             return true;
         }

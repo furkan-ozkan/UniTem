@@ -72,7 +72,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             ]
         },
         {
-            ""name"": ""InventorySlotContainer"",
+            ""name"": ""Inventory"",
             ""id"": ""5da8c833-c3d6-4504-9c73-eed8b72dfa69"",
             ""actions"": [
                 {
@@ -254,8 +254,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
-        // InventorySlotContainer
-        m_Inventory = asset.FindActionMap("InventorySlotContainer", throwIfNotFound: true);
+        // Inventory
+        m_Inventory = asset.FindActionMap("Inventory", throwIfNotFound: true);
         m_Inventory_Slot1 = m_Inventory.FindAction("Slot1", throwIfNotFound: true);
         m_Inventory_Slot2 = m_Inventory.FindAction("Slot2", throwIfNotFound: true);
         m_Inventory_Slot3 = m_Inventory.FindAction("Slot3", throwIfNotFound: true);
@@ -378,7 +378,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     }
     public PlayerActions @Player => new PlayerActions(this);
 
-    // InventorySlotContainer
+    // Inventory
     private readonly InputActionMap m_Inventory;
     private List<IInventoryActions> m_InventoryActionsCallbackInterfaces = new List<IInventoryActions>();
     private readonly InputAction m_Inventory_Slot1;

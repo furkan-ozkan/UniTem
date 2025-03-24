@@ -20,14 +20,14 @@ namespace RedAxeGames
 
 
         private Rigidbody rigidBody = null;
-        private Collider collider = null;
+        private Collider carryableCollider = null;
         private Transform targetParent = null;
         private int defaultLayer = 0;
 
         protected virtual void Awake()
         {
             rigidBody = GetComponent<Rigidbody>();
-            collider = GetComponent<Collider>();
+            carryableCollider = GetComponent<Collider>();
             defaultLayer = gameObject.layer;
         }
 
@@ -48,7 +48,7 @@ namespace RedAxeGames
         public void Carry()
         {
             gameObject.layer = carryingLayerIndex;
-            collider.isTrigger = true;
+            carryableCollider.isTrigger = true;
             rigidBody.isKinematic = true;
 
             transform.SetParent(targetParent);

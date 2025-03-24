@@ -2,27 +2,24 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 using Knife.HDRPOutline.Core;
 using System.Collections.Generic;
+using UnityEditor;
 
-[RequireComponent(typeof(ActionInvoker))]
+[RequireComponent(typeof(ActionInvoker), typeof(Provider))]
 public abstract class BaseInteractable : MonoBehaviour
 {
     public string InteractableName { get; set; }
 
-    [InlineProperty] [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)]
-    public List<DynamicRequirement> requirements = new List<DynamicRequirement>();
+    [InlineProperty] [ListDrawerSettings(Expanded = true, ShowIndexLabels = true)] public List<DynamicRequirement> requirements = new List<DynamicRequirement>();
 
     public bool disableHoverAfterInteraction;
     public ActionInvoker _actionInvoker;
-
-    [SerializeField, ValueDropdown(nameof(GetAllProviders))]
-    protected ItemRequirementProvider provider = null;
-
-    private IEnumerable<ItemRequirementProvider> GetAllProviders() => Utilities.LoadResourcesInIEnumerable<ItemRequirementProvider>("ItemProviders");
+    protected Provider provider = null;
 
 
     private void Start()
     {
         _actionInvoker = GetComponent<ActionInvoker>();
+        provider = GetComponent<Provider>();
     }
 
     public virtual bool Interact(GameObject player)
