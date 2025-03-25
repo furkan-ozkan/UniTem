@@ -39,12 +39,12 @@ public sealed class InventorySlotContainer : ScriptableObject
 
     public bool HasItem<T>(T itemDataBase) where T : ItemDataBase
     {
-        return slots.FirstOrDefault(x => x.Item.ItemName.Equals(itemDataBase.ItemName)) != null;
+        return slots.FirstOrDefault(x => x.ItemData.ItemName.Equals(itemDataBase.ItemName)) != null;
     }
 
     public bool HasItems<T>(T[] itemDataBases) where T : ItemDataBase
     {
-        HashSet<string> itemNames = new HashSet<string>(slots.Select(x => x?.Item?.ItemName));
+        HashSet<string> itemNames = new HashSet<string>(slots.Select(x => x?.ItemData?.ItemName));
         return itemDataBases.All(item => itemNames.Contains(item.ItemName));
     }
 }
