@@ -27,6 +27,12 @@ public sealed class PlayerHand : AbstractStateMachine<AbstractPlayerHandState>
         base.Awake();
     }
 
+    protected override void Update()
+    {
+        base.Update();
+        
+    }
+
     protected override void InitializeStates()
     {
         _emptyState = new PlayerHandEmptyState(this);

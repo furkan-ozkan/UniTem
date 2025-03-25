@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using RedAxeGames;
 
@@ -6,8 +7,8 @@ public class Item : MonoBehaviour
 {
     [SerializeField] private ItemDataBase itemDataBase = null;
     public ItemDataBase ItemDataBase => itemDataBase;
-    
-    
+
+
     private PlayerHand localPlayerHand = null;
     private Placeable localPlaceable = null;
     private Carryable localCarryable = null;
@@ -20,6 +21,11 @@ public class Item : MonoBehaviour
         localPlayerHand = GameObject.FindGameObjectWithTag("Player").GetComponentInChildren<PlayerHand>();
         localCarryable = GetComponent<Carryable>();
         localPlaceable = GetComponent<Placeable>();
+    }
+
+    private void Start()
+    {
+        itemDataBase.Initialize(this);
     }
 
     private void OnEnable()
@@ -35,5 +41,12 @@ public class Item : MonoBehaviour
     private void OnCarried()
     {
         localPlayerHand.CarriedItem(this);
+    }
+
+    public void TakeToHand()
+    {
+        GetComponent<Rigidbody>().isKinematic = true;
+        GetComponent<Collider>().isTrigger = true;
+        gameObject.SetActive(true);
     }
 }

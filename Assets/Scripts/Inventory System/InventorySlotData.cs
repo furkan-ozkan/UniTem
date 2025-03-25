@@ -3,13 +3,13 @@
 [System.Serializable]
 public class InventorySlotData
 {
-    [SerializeField] private ItemDataBase item = null;
-    public ItemDataBase Item => item;
+    [SerializeField] private ItemDataBase itemData = null;
+    public ItemDataBase ItemData => itemData;
 
-    public bool IsEmpty => !item;
+    public bool IsEmpty => !itemData;
 
     public void AddItem<T>(T newItem) where T : ItemDataBase
     {
-        item = newItem;
+        itemData = newItem;
     }
 }

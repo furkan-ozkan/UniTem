@@ -11,7 +11,7 @@ public class Provider : MonoBehaviour
     
     [SerializeField, ValueDropdown(nameof(GetAllEnigmaEventProviders)), OnCollectionChanged(nameof(HandleOnEnigmaEventProviderChanged))] 
     protected EnigmaEventRequirementProvider[] enigmaEventProviders = null;
-    
+
     private IEnumerable<ItemRequirementProvider> GetAllItemProviders() => Utilities.LoadResourcesInIEnumerable<ItemRequirementProvider>("ItemProviders");
     private IEnumerable<EnigmaEventRequirementProvider> GetAllEnigmaEventProviders() => Utilities.LoadResourcesInIEnumerable<EnigmaEventRequirementProvider>("EnigmaEventProviders");
 
@@ -20,14 +20,19 @@ public class Provider : MonoBehaviour
         if (itemProviders.Length <= 0)
             return;
 
+#if UNITY_EDITOR
         EditorApplication.delayCall += () => EditorGUIUtility.PingObject(itemProviders[0]);
+#endif
     }
     private void HandleOnEnigmaEventProviderChanged()
     {
         if (enigmaEventProviders.Length <= 0)
             return;
 
+#if UNITY_EDITOR
         EditorApplication.delayCall += () => EditorGUIUtility.PingObject(enigmaEventProviders[0]);
+#endif
+
     }
 
     public bool GetPermission()

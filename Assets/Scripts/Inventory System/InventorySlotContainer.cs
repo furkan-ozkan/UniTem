@@ -8,6 +8,9 @@ public sealed class InventorySlotContainer : ScriptableObject
     [SerializeField] private List<InventorySlotData> slots = new List<InventorySlotData>();
     public int Capacity => slots.Count;
 
+    public event System.Action<InventorySlotData> OnItemAdded = null;
+    public event System.Action<InventorySlotData> OnItemRemoved = null;
+
     public void GetCopy(ref InventorySlotContainer inventorySlotContainer)
     {
         inventorySlotContainer.slots = new List<InventorySlotData>(slots);
@@ -20,6 +23,7 @@ public sealed class InventorySlotContainer : ScriptableObject
         if (HasAvailableSlot(out InventorySlotData availableSlot))
         {
             availableSlot.AddItem(newItem);
+            OnItemAdded?.Invoke(availableSlot);
             return true;
         }
 
