@@ -36,5 +36,7 @@ public class PlayerInventory : MonoBehaviour
         itemObject.SetActive(false);
         itemObject.transform.SetParent(itemsParent);
         itemObject.transform.localPosition = Vector3.zero;
+        
+        newItem.OnAddedInventory();
     }
 }

@@ -43,10 +43,9 @@ public class Item : MonoBehaviour
         localPlayerHand.CarriedItem(this);
     }
 
-    public void TakeToHand()
+    public void OnAddedInventory()
     {
         GetComponent<Rigidbody>().isKinematic = true;
         GetComponent<Collider>().isTrigger = true;
-        gameObject.SetActive(true);
     }
 }

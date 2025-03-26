@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerLook), typeof(PlayerInput))]
 public sealed class PlayerHand : AbstractStateMachine<AbstractPlayerHandState>
@@ -25,12 +26,6 @@ public sealed class PlayerHand : AbstractStateMachine<AbstractPlayerHandState>
     {
         _playerInput = GetComponent<PlayerInput>();
         base.Awake();
-    }
-
-    protected override void Update()
-    {
-        base.Update();
-        
     }
 
     protected override void InitializeStates()

@@ -21,6 +21,12 @@ namespace RedAxeGames
 
         private event UpdateHandler updateCallback = null;
 
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            OnHoldInputCanceled?.Invoke();
+        }
+
         private void Update()
         {
             updateCallback?.Invoke();
